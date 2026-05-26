@@ -1,0 +1,2 @@
+aiogram==3.13.1
+imageio-ffmpeg==0.5.1

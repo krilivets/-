@@ -1,48 +1,66 @@
-# Circle Video Bot — fixed ffmpeg version
+# Circle Video Bot — FALLBACK FIX
 
-Telegram-бот, который принимает обычное видео и возвращает его как Telegram-кружочек.
+Исправленная версия Telegram-бота, который принимает обычное видео и возвращает его как Telegram-кружочек.
 
-## Главное исправление
+## Что исправлено
 
-В этой версии бот умеет работать даже если на хостинге нет системного `ffmpeg`.
-
-Он сначала ищет обычный `ffmpeg`, а если его нет — использует встроенный бинарник из Python-пакета:
+Если Telegram выдаёт ошибку:
 
 ```txt
-imageio-ffmpeg
+Bad Request: VOICE_MESSAGES_FORBIDDEN
 ```
 
-## Переменная окружения
+бот больше не ломается. Он делает так:
 
-На хостинге добавь:
+1. Сначала пытается отправить настоящий `video_note`, то есть кружочек.
+2. Если Telegram запрещает кружочки/voice-video messages, бот отправляет результат как обычное квадратное видео.
+
+## Почему бывает VOICE_MESSAGES_FORBIDDEN
+
+Это ограничение Telegram со стороны чата/аккаунта/приватности. В таком случае бот не может насильно отправить настоящий кружочек.
+
+## Переменные окружения
+
+Обязательно:
 
 ```env
 BOT_TOKEN=твой_токен_от_BotFather
 ```
 
-## Команда запуска
+Рекомендуемые быстрые настройки:
 
-```bash
-python bot.py
+```env
+VIDEO_NOTE_SIZE=360
+VIDEO_NOTE_FPS=20
+VIDEO_NOTE_CRF=35
+VIDEO_NOTE_PRESET=ultrafast
+MAX_DURATION=60
+ENABLE_AUDIO=0
 ```
 
-## Build / install command
+Если хочешь со звуком:
 
-Если хостинг просит команду установки:
+```env
+ENABLE_AUDIO=1
+```
+
+Со звуком будет медленнее.
+
+## Build command
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Docker
-
-Если хостинг запускает проект через Dockerfile, `ffmpeg` тоже будет установлен автоматически.
+## Start command
 
 ```bash
-docker build -t circle-video-bot .
-docker run -e BOT_TOKEN=твой_токен_от_BotFather circle-video-bot
+python bot.py
 ```
 
-## Важно
+## Docker
 
-У обычного Telegram Bot API есть ограничение на скачивание больших файлов. В коде стоит проверка на 20 МБ.
+```bash
+docker build -t circle-video-bot-fallback .
+docker run -e BOT_TOKEN=твой_токен circle-video-bot-fallback
+```
